@@ -1,0 +1,53 @@
+---
+title: "sketches"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+
+xl <- readxl::read_excel('./FR_Expt_14Jan2020_055938_6430774.xlsx')
+```
+
+While NIH funding has recovered from 2008, NSF funding has remained low. The rise in NIH funding is driven by a rise in the number of projects funded. The number of projects the NSF has funded is on a somewhat downwards trend, but it's pretty volatile.
+```{r}
+# By total funding
+xl %>% 
+  mutate(`FY Total Cost` = if_else(is.na(`FY Total Cost`), `FY Total Cost  (Sub Projects)`, `FY Total Cost`)) %>%
+  group_by(Agency, FY) %>%
+  summarize(total = sum(`FY Total Cost`)) %>%
+  ggplot(aes(FY, total)) + 
+  geom_line() + 
+  facet_wrap(~ Agency, scales = "free_y")
+
+# By number of projects
+xl %>% 
+  count(Agency, FY) %>%
+  ggplot(aes(FY, n)) + 
+  geom_line() + 
+  facet_wrap(~ Agency, scales = "free_y")
+
+
+## CFDA
+
+# By total funding
+xl %>% 
+  filter(grepl("47", `CFDA Code`)) %>% 
+  mutate(`FY Total Cost` = if_else(is.na(`FY Total Cost`), `FY Total Cost  (Sub Projects)`, `FY Total Cost`)) %>%
+  group_by(`CFDA Code`, FY) %>%
+  summarize(total = sum(`FY Total Cost`)) %>%
+  ggplot(aes(FY, total)) + 
+  geom_line() + 
+  facet_wrap(~ `CFDA Code`, scales = "free_y")
+
+# By number of projects
+xl %>% 
+  filter(grepl("47", `CFDA Code`)) %>% 
+  count(`CFDA Code`, FY) %>%
+  ggplot(aes(FY, n)) + 
+  geom_line() + 
+  facet_wrap(~ `CFDA Code`, scales = "free_y")
+```
+
